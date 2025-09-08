@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta
+    charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>English
+    Flashcards
+  </title>
+  <link
+    rel="stylesheet"
+    href="style.css">
+</head>
+
+<body>
+  <nav class="nav-bar">
+    <button class="nav-btn" data-level="A1">A1</button>
+    <button class="nav-btn" data-level="A2">A2</button>
+    <button class="nav-btn" data-level="B1">B1</button>
+    <button class="nav-btn" data-level="B2">B2</button>
+    <button class="nav-btn" data-level="All">All</button>
+    <button class="nav-btn" data-level="words">Native</button>
+  </nav>
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+    <span id="progress-text"></span>
+  </div>
+  <div
+    class="container">
+    <h1>English
+      Study
+      Flashcards
+    </h1>
+
+    <div
+      id="flashcard-container">
+      <div
+        id="flashcard"
+        class="flashcard">
+        <div
+          class="flashcard-front">
+          <div
+            class="flashcard-front-content">
+            <h2
+              id="flashcard-word-front">
+              Word
+              Loading...
+            </h2>
+            <p>
+              <strong>Pronunciation:</strong>
+              <span
+                id="flashcard-pronunciation-text">N/A</span>
+            </p>
+            <button
+              id="flashcard-play-audio-btn"
+              style="display:none;">🔊
+              Play
+              Sound</button>
+          </div>
+        </div>
+        <div
+          class="flashcard-back">
+          <div
+            class="flashcard-back-content">
+            <h2
+              id="flashcard-word-back">
+            </h2>
+            <div
+              id="flashcard-headword-translation-area">
+              <p>
+                <strong>Word
+                  Translation
+                  (Arabic):</strong>
+              </p>
+              <p id="flashcard-headword-arabic"
+                dir="rtl"
+                lang="ar">
+                <i>Translating...</i>
+              </p>
+            </div>
+            <hr
+              class="content-separator">
+            <div
+              id="flashcard-mw-details">
+              <p>
+                <strong>Part
+                  of
+                  speech:</strong>
+                <span
+                  id="flashcard-functional-label">N/A</span>
+              </p>
+              <div
+                id="flashcard-definitions-area">
+                <h3>
+                  Definitions
+                  &
+                  Examples:
+                </h3>
+                <dl
+                  id="flashcard-definitions-list">
+                </dl>
+              </div>
+              <div
+                id="flashcard-synonyms-area"
+                style="display:none;">
+                <h3>
+                  Synonyms:
+                </h3>
+                <ul
+                  id="flashcard-synonyms-list">
+                </ul>
+              </div>
+            </div>
+            <div
+              id="flashcard-word-not-found-area"
+              style="display:none;">
+              {/*
+              Content
+              handled
+              by JS
+              */}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="flashcard-navigation">
+      <button
+        id="prev-card-btn">Previous</button>
+        <button
+          id="next-card-btn">Next</button>
+    </div>
+
+    <div
+      id="loading-message"
+      class="status-message"
+      style="display:none;">
+      Loading card
+      data...</div>
+    <div
+      id="error-message"
+      class="status-message"
+      style="display:none;">
+    </div>
+  </div>
+
+  
+  <script
+    src="app.js"
+    defer></script>
+</body>
+
+</html>
