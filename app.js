@@ -7,6 +7,7 @@ const MW_API_KEY = "ce783f93-1ba5-4c60-8433-512ac0a0b5ea";
 let flashcardWords = [];
 let currentCardIndex = 0;
 const mwDataCache = new Map(); // Using Map for caching
+let currentLevel = "A1"; // To track the current level globally
 
 // DOM Elements
 const flashcardElement = document.getElementById("flashcard");
@@ -63,9 +64,14 @@ let currentPronunciationAudioBasename = null;
 async function initializeApp() {
   setupEventListeners();
   await loadWords("A1"); // Load A1 words by default
+  // Load the last used level, or default to A1
+  const savedLevel = localStorage.getItem("flashcardApp_currentLevel") || "A1";
+  await loadWords(savedLevel);
 }
 
 async function loadWords(level) {
+  currentLevel = level;
+  localStorage.setItem("flashcardApp_currentLevel", level);
   const navButtons = document.querySelectorAll(".nav-btn");
   navButtons.forEach((button) => {
     if (button.dataset.level === level) {
@@ -128,6 +134,14 @@ async function loadWords(level) {
     }
 
     currentCardIndex = 0;
+    // Load saved index for this level, or default to 0
+    const savedIndices =
+      JSON.parse(localStorage.getItem("flashcardApp_indices")) || {};
+    currentCardIndex = savedIndices[level] || 0;
+    // Reset if the saved index is out of bounds for the current word list
+    if (currentCardIndex >= flashcardWords.length) {
+      currentCardIndex = 0;
+    }
     await displayCard(currentCardIndex);
     updateProgress();
     hideLoadingMessage();
@@ -139,6 +153,7 @@ async function loadWords(level) {
 
 function updateProgress() {
   const totalWords = flashcardWords.length;
+  // add completed words to local storage and get the value from local storage
   const completedWords = currentCardIndex + 1;
   const progressPercentage = (completedWords / totalWords) * 100;
 
@@ -177,6 +192,12 @@ async function displayCard(index) {
     return;
   }
   currentCardIndex = index;
+
+  // Save the current index for the current level to localStorage
+  const savedIndices =
+    JSON.parse(localStorage.getItem("flashcardApp_indices")) || {};
+  savedIndices[currentLevel] = index;
+  localStorage.setItem("flashcardApp_indices", JSON.stringify(savedIndices));
   const word = flashcardWords[index];
 
   showLoadingMessage(`Loading data for "${word}"...`);
