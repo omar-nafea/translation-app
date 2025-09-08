@@ -71,8 +71,33 @@ h1 {
   font-weight: 600;
   transition: all var(--transition-speed) ease;
 }
+#controls-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.remember-card-btn {
+  padding: 1rem 2rem;
+  font-size: 1em;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: gray;
+  color: white;
+  transition: all var(--transition-speed);
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
 
-.nav-btn:hover, .nav-btn.selected {
+.remember-card-btn:hover {
+  background-color: darkgray;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+.nav-btn:hover{
   background-color: rgba(0, 123, 255, 0.1);
   color: var(--primary-color);
 }
@@ -292,7 +317,6 @@ dl dd ul {
 }
 
 #flashcard-navigation {
-  margin-top: 2rem;
   display: flex;
   justify-content: center;
   gap: 1rem;

@@ -249,9 +249,6 @@ async function displayCard(index) {
     updateNavigationButtons();
     updateProgress();
   }
-  setTimeout(() => {
-    playCurrentPronunciationAudio();
-  }, 100);
 }
 
 function resetCardView(wordForTitle) {
@@ -820,12 +817,14 @@ function flipCard() {
 async function nextCard() {
   if (currentCardIndex < flashcardWords.length - 1) {
     await displayCard(currentCardIndex + 1);
+    playCurrentPronunciationAudio();
   }
 }
 
 async function prevCard() {
   if (currentCardIndex > 0) {
     await displayCard(currentCardIndex - 1);
+    playCurrentPronunciationAudio();
   }
 }
 
