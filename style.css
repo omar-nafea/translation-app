@@ -367,3 +367,122 @@ dl dd ul {
   background-color: #f8d7da;
   border: 1px solid var(--error-color);
 }
+
+/* Search functionality styles */
+.search-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  align-items: center;
+}
+
+#search-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 2px solid var(--light-gray);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  transition: border-color var(--transition-speed);
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+#search-btn {
+  padding: 0.8rem 1.2rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color var(--transition-speed);
+}
+
+#search-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--light-gray);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-results-header {
+  padding: 0.8rem 1rem;
+  background-color: var(--light-gray);
+  font-weight: 600;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.search-result-item:hover {
+  background-color: var(--light-gray);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-word {
+  font-weight: 600;
+  color: var(--on-surface-color);
+}
+
+.search-result-level {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.search-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: var(--secondary-color);
+  font-style: italic;
+}
+
+.search-more-results {
+  padding: 0.8rem 1rem;
+  text-align: center;
+  color: var(--secondary-color);
+  font-style: italic;
+  border-top: 1px solid #f8f9fa;
+}
+
+/* Remember button states */
+.remember-card-btn.remembered {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.remember-card-btn.remembered:hover {
+  background-color: #218838;
+}

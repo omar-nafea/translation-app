@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Features Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .feature {
+        background: #f4f4f4;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .test-btn {
+        background: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      .test-btn:hover {
+        background: #0056b3;
+      }
+      .status {
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Flashcard App Features Test</h1>
+
+    <div class="feature">
+      <h2>✨ New Features Added:</h2>
+
+      <h3>1. 📌 Remember Functionality</h3>
+      <ul>
+        <li>Click "To remember" button to save words to a special list</li>
+        <li>Button changes to "✓ Remembered" when word is saved</li>
+        <li>Access saved words via "Remember" tab in navigation</li>
+        <li>Words persist between sessions using localStorage</li>
+      </ul>
+
+      <h3>2. 🔍 Search Functionality</h3>
+      <ul>
+        <li>Search input field at the top of the app</li>
+        <li>Searches across all levels: A1, A2, B1, B2, B3, C1, Native</li>
+        <li>Shows exact matches first, then partial matches</li>
+        <li>Click on search result to navigate directly to that word</li>
+        <li>Supports keyboard navigation (Enter to search)</li>
+      </ul>
+
+      <h3>3. 🎯 Enhanced Navigation</h3>
+      <ul>
+        <li>Added B3 and C1 level support</li>
+        <li>Remember tab for accessing saved words</li>
+        <li>Word database loads automatically for search functionality</li>
+      </ul>
+    </div>
+
+    <div class="feature">
+      <h2>🧪 Test Instructions:</h2>
+      <ol>
+        <li>
+          <strong>Test Remember Feature:</strong>
+          <ul>
+            <li>Go to any level (A1, A2, etc.)</li>
+            <li>Click "To remember" button</li>
+            <li>Notice button changes to "✓ Remembered"</li>
+            <li>Click "Remember" tab to see saved words</li>
+            <li>Refresh page - words should still be there</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Test Search Feature:</strong>
+          <ul>
+            <li>Type a word in the search box (e.g., "hello", "cat", "run")</li>
+            <li>Press Enter or click Search button</li>
+            <li>Click on a search result</li>
+            <li>App should navigate to that word in the correct level</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Test New Levels:</strong>
+          <ul>
+            <li>Click B3 and C1 tabs</li>
+            <li>Verify words load correctly</li>
+            <li>Test remember and search within these levels</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <div class="feature">
+      <h2>🎮 How to Use:</h2>
+
+      <h3>Remember Feature:</h3>
+      <p>
+        1. Navigate to any word<br />
+        2. Click "To remember" button<br />
+        3. Button turns green and shows "✓ Remembered"<br />
+        4. Click "Remember" tab to review saved words<br />
+        5. Click button again to remove from remember list
+      </p>
+
+      <h3>Search Feature:</h3>
+      <p>
+        1. Type word in search box<br />
+        2. Press Enter or click 🔍 Search<br />
+        3. Click on any result to navigate to that word<br />
+        4. App automatically switches to correct level
+      </p>
+
+      <h3>Keyboard Shortcuts:</h3>
+      <p>
+        • Arrow keys: Navigate cards<br />
+        • Space/Enter: Flip card<br />
+        • P: Play pronunciation<br />
+        • Enter in search: Perform search
+      </p>
+    </div>
+
+    <div class="feature">
+      <h2>💾 Data Storage:</h2>
+      <p>
+        • Remember list: Stored in localStorage<br />
+        • Current position: Saved per level<br />
+        • Search database: Cached in memory<br />
+        • All data persists between sessions
+      </p>
+    </div>
+
+    <a href="index.html" class="test-btn">🚀 Open Flashcard App</a>
+
+    <div class="status">
+      <div class="success">
+        ✅ All features implemented and ready for testing!
+      </div>
+    </div>
+
+    <script>
+      console.log("🧪 Features Test Page Loaded");
+      console.log(
+        "📝 Available levels: A1, A2, B1, B2, B3, C1, Native, Remember"
+      );
+      console.log("🔍 Search works across all levels");
+      console.log("💾 Remember functionality with localStorage persistence");
+    </script>
+  </body>
+</html>

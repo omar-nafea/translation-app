@@ -8,6 +8,8 @@ let flashcardWords = [];
 let currentCardIndex = 0;
 const mwDataCache = new Map(); // Using Map for caching
 let currentLevel = "A1"; // To track the current level globally
+let toRememberWords = []; // Array to store words marked to remember
+let allWordsCache = new Map(); // Cache for all words from all levels for search
 
 // DOM Elements
 const flashcardElement = document.getElementById("flashcard");
@@ -51,6 +53,10 @@ const prevCardBtnElement = document.getElementById("prev-card-btn");
 const nextCardBtnElement = document.getElementById("next-card-btn");
 const rememberCardBtnElement = document.getElementById("remember-card-btn");
 
+const searchInputElement = document.getElementById("search-input");
+const searchBtnElement = document.getElementById("search-btn");
+const searchResultsElement = document.getElementById("search-results");
+
 const loadingMsgElement = document.getElementById("loading-message");
 const errorMsgElement = document.getElementById("error-message");
 
@@ -64,6 +70,11 @@ let currentPronunciationAudioBasename = null;
 // --- Initialization ---
 async function initializeApp() {
   console.log("🚀 Initializing Flashcard App...");
+
+  // Initialize remember functionality
+  toRememberWords = getRememberWords();
+  console.log(`💭 Loaded ${toRememberWords.length} words to remember`);
+
   setupEventListeners();
   // Load the last used level, or default to A1
   const savedLevel = localStorage.getItem("flashcardApp_currentLevel") || "A1";
@@ -87,18 +98,9 @@ async function loadWords(level) {
   showLoadingMessage(`Loading ${level} word list...`);
   try {
     let words = [];
-    if (level === "All") {
-      const levels = ["A1", "A2", "B1", "B2", "B3", "C1"];
-      for (const l of levels) {
-        const response = await fetch(`${l}.json`);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load ${l}.json: ${response.status} ${response.statusText}`
-          );
-        }
-        const data = await response.json();
-        words.push(...data);
-      }
+    if (level === "remember") {
+      // Load words from the remember list
+      words = getRememberWords();
     } else if (level === "words") {
       const response = await fetch(`words.json`);
       if (!response.ok) {
@@ -108,6 +110,7 @@ async function loadWords(level) {
       }
       words = await response.json();
     } else {
+      // Handle all individual levels (A1, A2, B1, B2, B3, C1)
       const response = await fetch(`${level}.json`);
       if (!response.ok) {
         throw new Error(
@@ -261,6 +264,7 @@ async function displayCard(index) {
   } finally {
     hideLoadingMessage();
     updateNavigationButtons();
+    updateRememberButtonState();
     updateProgress();
   }
 }
@@ -845,6 +849,9 @@ function flipCard() {
 async function nextCard() {
   if (currentCardIndex < flashcardWords.length - 1) {
     await displayCard(currentCardIndex + 1);
+    if (currentPronunciationAudioBasename) {
+      playCurrentPronunciationAudio();
+    }
   }
 }
 
@@ -857,6 +864,212 @@ async function prevCard() {
 function updateNavigationButtons() {
   prevCardBtnElement.disabled = currentCardIndex === 0;
   nextCardBtnElement.disabled = currentCardIndex === flashcardWords.length - 1;
+}
+
+// --- Remember Functionality ---
+function getRememberWords() {
+  const saved = localStorage.getItem("flashcardApp_rememberWords");
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveRememberWords() {
+  localStorage.setItem(
+    "flashcardApp_rememberWords",
+    JSON.stringify(toRememberWords)
+  );
+}
+
+function addWordToRemember(word) {
+  if (!toRememberWords.includes(word)) {
+    toRememberWords.push(word);
+    saveRememberWords();
+    console.log(`✅ Added "${word}" to remember list`);
+    return true;
+  }
+  console.log(`⚠️ "${word}" is already in remember list`);
+  return false;
+}
+
+function removeWordFromRemember(word) {
+  const index = toRememberWords.indexOf(word);
+  if (index > -1) {
+    toRememberWords.splice(index, 1);
+    saveRememberWords();
+    console.log(`❌ Removed "${word}" from remember list`);
+    return true;
+  }
+  return false;
+}
+
+function toggleRememberCurrentWord() {
+  const currentWord = flashcardWords[currentCardIndex];
+  if (!currentWord) return;
+
+  const isInRememberList = toRememberWords.includes(currentWord);
+
+  if (isInRememberList) {
+    removeWordFromRemember(currentWord);
+    rememberCardBtnElement.textContent = "To remember";
+    rememberCardBtnElement.classList.remove("remembered");
+  } else {
+    addWordToRemember(currentWord);
+    rememberCardBtnElement.textContent = "✓ Remembered";
+    rememberCardBtnElement.classList.add("remembered");
+  }
+
+  updateRememberButtonState();
+}
+
+function updateRememberButtonState() {
+  const currentWord = flashcardWords[currentCardIndex];
+  const isInRememberList = toRememberWords.includes(currentWord);
+
+  if (isInRememberList) {
+    rememberCardBtnElement.textContent = "✓ Remembered";
+    rememberCardBtnElement.classList.add("remembered");
+  } else {
+    rememberCardBtnElement.textContent = "To remember";
+    rememberCardBtnElement.classList.remove("remembered");
+  }
+}
+
+// --- Search Functionality ---
+async function loadAllWordsForSearch() {
+  const levels = ["A1", "A2", "B1", "B2", "B3", "C1", "words"];
+  const allWords = new Map();
+
+  for (const level of levels) {
+    try {
+      const filename = level === "words" ? "words.json" : `${level}.json`;
+      const response = await fetch(filename);
+      if (response.ok) {
+        const words = await response.json();
+        if (Array.isArray(words)) {
+          words.forEach((word) => {
+            if (typeof word === "string" && word.trim() !== "") {
+              if (!allWords.has(word.toLowerCase())) {
+                allWords.set(word.toLowerCase(), { word: word, level: level });
+              }
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to load ${level} for search:`, error);
+    }
+  }
+
+  allWordsCache = allWords;
+  console.log(`📚 Loaded ${allWords.size} words for search`);
+  return allWords;
+}
+
+async function searchWord(searchTerm) {
+  if (!searchTerm || searchTerm.trim() === "") {
+    hideSearchResults();
+    return;
+  }
+
+  searchTerm = searchTerm.trim().toLowerCase();
+
+  if (allWordsCache.size === 0) {
+    showLoadingMessage("Loading word database for search...");
+    await loadAllWordsForSearch();
+    hideLoadingMessage();
+  }
+
+  const results = [];
+
+  // Exact match first
+  if (allWordsCache.has(searchTerm)) {
+    results.push(allWordsCache.get(searchTerm));
+  }
+
+  // Partial matches
+  for (const [wordKey, wordData] of allWordsCache) {
+    if (wordKey !== searchTerm && wordKey.includes(searchTerm)) {
+      results.push(wordData);
+    }
+  }
+
+  displaySearchResults(results, searchTerm);
+}
+
+function displaySearchResults(results, searchTerm) {
+  if (results.length === 0) {
+    searchResultsElement.innerHTML = `<div class="search-no-results">No words found for "${searchTerm}"</div>`;
+    searchResultsElement.style.display = "block";
+    return;
+  }
+
+  let html = `<div class="search-results-header">Found ${results.length} word(s) for "${searchTerm}":</div>`;
+
+  results.slice(0, 10).forEach((result) => {
+    // Limit to 10 results
+    html += `
+      <div class="search-result-item" data-word="${result.word}" data-level="${
+      result.level
+    }">
+        <span class="search-result-word">${result.word}</span>
+        <span class="search-result-level">${result.level.toUpperCase()}</span>
+      </div>
+    `;
+  });
+
+  if (results.length > 10) {
+    html += `<div class="search-more-results">...and ${
+      results.length - 10
+    } more results</div>`;
+  }
+
+  searchResultsElement.innerHTML = html;
+  searchResultsElement.style.display = "block";
+
+  // Add click handlers to search results
+  searchResultsElement
+    .querySelectorAll(".search-result-item")
+    .forEach((item) => {
+      item.addEventListener("click", () => {
+        const word = item.dataset.word;
+        const level = item.dataset.level;
+        navigateToWord(word, level);
+      });
+    });
+}
+
+function hideSearchResults() {
+  searchResultsElement.style.display = "none";
+}
+
+async function navigateToWord(word, level) {
+  hideSearchResults();
+  searchInputElement.value = "";
+
+  try {
+    // Load the level containing the word
+    await loadWords(level);
+
+    // Find the word index in the loaded words
+    const wordIndex = flashcardWords.findIndex(
+      (w) => w.toLowerCase() === word.toLowerCase()
+    );
+
+    if (wordIndex !== -1) {
+      await displayCard(wordIndex);
+      console.log(
+        `🎯 Navigated to "${word}" in ${level.toUpperCase()} (position ${
+          wordIndex + 1
+        })`
+      );
+    } else {
+      showErrorMessage(
+        `Word "${word}" not found in ${level.toUpperCase()} level`
+      );
+    }
+  } catch (error) {
+    console.error("Error navigating to word:", error);
+    showErrorMessage(`Failed to navigate to "${word}": ${error.message}`);
+  }
 }
 
 // --- Setup Event Listeners ---
@@ -878,8 +1091,38 @@ function setupEventListeners() {
   // Add event listener for remember button
   if (rememberCardBtnElement) {
     rememberCardBtnElement.addEventListener("click", () => {
-      // For now, just move to next card - you can enhance this later
-      nextCard();
+      toggleRememberCurrentWord();
+    });
+  }
+
+  // Add event listeners for search functionality
+  if (searchBtnElement) {
+    searchBtnElement.addEventListener("click", () => {
+      const searchTerm = searchInputElement.value.trim();
+      searchWord(searchTerm);
+    });
+  }
+
+  if (searchInputElement) {
+    searchInputElement.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        const searchTerm = searchInputElement.value.trim();
+        searchWord(searchTerm);
+      }
+    });
+
+    // Hide search results when input is cleared
+    searchInputElement.addEventListener("input", (event) => {
+      if (event.target.value.trim() === "") {
+        hideSearchResults();
+      }
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest("#search-container")) {
+        hideSearchResults();
+      }
     });
   }
 

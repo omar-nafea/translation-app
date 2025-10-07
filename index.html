@@ -15,7 +15,7 @@
       <button class="nav-btn" data-level="B2">B2</button>
       <button class="nav-btn" data-level="B3">B3</button>
       <button class="nav-btn" data-level="C1">C1</button>
-      <button class="nav-btn" data-level="All">All</button>
+      <button class="nav-btn" data-level="remember">Remember</button>
       <button class="nav-btn" data-level="words">Native</button>
     </nav>
     <div id="progress-container">
@@ -24,6 +24,22 @@
     </div>
     <div class="container">
       <h1>English Study Flashcards</h1>
+
+      <!-- Search functionality -->
+      <div id="search-container" class="search-container">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search for a word across all levels..."
+          autocomplete="off"
+        />
+        <button id="search-btn">🔍 Search</button>
+        <div
+          id="search-results"
+          class="search-results"
+          style="display: none"
+        ></div>
+      </div>
 
       <div id="flashcard-container">
         <div id="flashcard" class="flashcard">
