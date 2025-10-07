@@ -49,6 +49,7 @@ const flashcardWordNotFoundAreaElement = document.getElementById(
 
 const prevCardBtnElement = document.getElementById("prev-card-btn");
 const nextCardBtnElement = document.getElementById("next-card-btn");
+const rememberCardBtnElement = document.getElementById("remember-card-btn");
 
 const loadingMsgElement = document.getElementById("loading-message");
 const errorMsgElement = document.getElementById("error-message");
@@ -62,11 +63,13 @@ let currentPronunciationAudioBasename = null;
 
 // --- Initialization ---
 async function initializeApp() {
+  console.log("🚀 Initializing Flashcard App...");
   setupEventListeners();
-  await loadWords("A1"); // Load A1 words by default
   // Load the last used level, or default to A1
   const savedLevel = localStorage.getItem("flashcardApp_currentLevel") || "A1";
+  console.log(`📚 Loading ${savedLevel} level...`);
   await loadWords(savedLevel);
+  console.log("✅ App initialized successfully!");
 }
 
 async function loadWords(level) {
@@ -85,7 +88,7 @@ async function loadWords(level) {
   try {
     let words = [];
     if (level === "All") {
-      const levels = ["A1", "A2", "B1", "B2"];
+      const levels = ["A1", "A2", "B1", "B2", "B3", "C1"];
       for (const l of levels) {
         const response = await fetch(`${l}.json`);
         if (!response.ok) {
@@ -148,6 +151,8 @@ async function loadWords(level) {
   } catch (error) {
     console.error(`Failed to load words for level ${level}:`, error);
     showErrorMessage(`Error loading words: ${error.message}`);
+    prevCardBtnElement.disabled = true;
+    nextCardBtnElement.disabled = true;
   }
 }
 
@@ -206,12 +211,21 @@ async function displayCard(index) {
   try {
     let processedMwData = mwDataCache.get(word);
     if (!processedMwData) {
-      processedMwData = await fetchAndProcessMwData(word);
-      if (processedMwData && !processedMwData.error) {
-        mwDataCache.set(word, processedMwData);
+      try {
+        processedMwData = await fetchAndProcessMwData(word);
+        if (processedMwData && !processedMwData.error) {
+          mwDataCache.set(word, processedMwData);
+        }
+      } catch (apiError) {
+        console.warn(`API call failed for "${word}":`, apiError);
+        // Create a minimal fallback data structure
+        processedMwData = {
+          error: true,
+          errorMessage:
+            "Dictionary service temporarily unavailable. Word is still available for study.",
+        };
       }
     }
-
     flashcardHeadwordArabicElement.innerHTML = "<i>Translating word...</i>";
     translateTextToArabic(word)
       .then((translatedWord) => {
@@ -388,9 +402,12 @@ function handleWordNotFoundOnCard(word, errorMessage) {
   flashcardMwDetailsElement.style.display = "none";
   flashcardWordNotFoundAreaElement.style.display = "block";
 
-  flashcardWordNotFoundAreaElement.innerHTML = `<p><i>${
-    errorMessage || `Details for "${word}" were not found in the dictionary.`
-  }</i></p>`;
+  flashcardWordNotFoundAreaElement.innerHTML = `
+    <p><i>${
+      errorMessage || `Details for "${word}" were not found in the dictionary.`
+    }</i></p>
+    <p><em>This word is still available for study. You can look it up manually if needed.</em></p>
+  `;
   // Headword translation is initiated in displayCard, its placeholder will show status.
 }
 
@@ -401,7 +418,7 @@ async function fetchAndProcessMwData(word) {
     return {
       error: true,
       errorMessage:
-        "Merriam-Webster API Key not configured. Please update script.js.",
+        "Merriam-Webster API Key not configured. Please update app.js.",
     };
   }
 
@@ -410,7 +427,12 @@ async function fetchAndProcessMwData(word) {
   )}?key=${MW_API_KEY}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      mode: "cors",
+      headers: {
+        Accept: "application/json",
+      },
+    });
     const clonedResponseForText = response.clone();
 
     if (!response.ok) {
@@ -594,7 +616,12 @@ async function translateTextToArabic(textToTranslate) {
   )}&langpair=${sourceLang}|${targetLang}`;
 
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      mode: "cors",
+      headers: {
+        Accept: "application/json",
+      },
+    });
     if (!response.ok) {
       // Try to get more details from MyMemory error if possible
       let errorDetails = await response.text();
@@ -796,9 +823,10 @@ function playCurrentPronunciationAudio() {
           "URL:",
           audioUrl
         );
-        showErrorMessage(
-          "Could not play audio. Check console (e.g., file not found, browser restrictions)."
-        );
+        // Don't show error message for audio failures as it's not critical
+        // showErrorMessage(
+        //   "Could not play audio. Check console (e.g., file not found, browser restrictions)."
+        // );
       });
   } else {
     console.error(
@@ -817,14 +845,12 @@ function flipCard() {
 async function nextCard() {
   if (currentCardIndex < flashcardWords.length - 1) {
     await displayCard(currentCardIndex + 1);
-    playCurrentPronunciationAudio();
   }
 }
 
 async function prevCard() {
   if (currentCardIndex > 0) {
     await displayCard(currentCardIndex - 1);
-    playCurrentPronunciationAudio();
   }
 }
 
@@ -849,6 +875,14 @@ function setupEventListeners() {
   nextCardBtnElement.addEventListener("click", nextCard);
   prevCardBtnElement.addEventListener("click", prevCard);
 
+  // Add event listener for remember button
+  if (rememberCardBtnElement) {
+    rememberCardBtnElement.addEventListener("click", () => {
+      // For now, just move to next card - you can enhance this later
+      nextCard();
+    });
+  }
+
   const navButtons = document.querySelectorAll(".nav-btn");
   navButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -856,7 +890,48 @@ function setupEventListeners() {
       loadWords(level);
     });
   });
+
+  // Add keyboard navigation
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.target.tagName === "INPUT" ||
+      event.target.tagName === "TEXTAREA"
+    ) {
+      return; // Don't interfere with input fields
+    }
+
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowUp":
+        event.preventDefault();
+        prevCard();
+        break;
+      case "ArrowRight":
+      case "ArrowDown":
+        event.preventDefault();
+        nextCard();
+        break;
+      case " ":
+      case "Enter":
+        event.preventDefault();
+        flipCard();
+        break;
+      case "p":
+      case "P":
+        event.preventDefault();
+        if (currentPronunciationAudioBasename) {
+          playCurrentPronunciationAudio();
+        }
+        break;
+    }
+  });
 }
 
 // --- Start the App ---
-document.addEventListener("DOMContentLoaded", initializeApp);
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🌟 DOM loaded, starting flashcard app...");
+  initializeApp().catch((error) => {
+    console.error("❌ Failed to initialize app:", error);
+    showErrorMessage(`Failed to start the app: ${error.message}`);
+  });
+});
